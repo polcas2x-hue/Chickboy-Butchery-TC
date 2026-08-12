@@ -1,0 +1,8 @@
+-- Optional local-dev seed. Run automatically by `supabase db reset`.
+-- There's no seed data for auth.users here (create test users via the app's
+-- sign-up form or the Studio Auth UI, then use the snippet below to promote
+-- one to admin and set up a manager relationship):
+--
+--   update profiles set role = 'admin' where id = '<user-uuid>';
+--   update profiles set role = 'manager' where id = '<manager-uuid>';
+--   update profiles set manager_id = '<manager-uuid>' where id = '<requester-uuid>';
