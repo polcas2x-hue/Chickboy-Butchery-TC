@@ -67,6 +67,8 @@ This repo is set up for GitHub Actions CI (`.github/workflows/ci.yml`) — it ru
    - `VITE_SUPABASE_ANON_KEY`
 5. Deploy. Every push to `main` will auto-deploy; PRs get preview URLs.
 
+**If you change an environment variable later**: clicking "Retry deployment" on an existing deployment reuses the old build output (env vars baked in at build time) — it does **not** pick up the new value. Push a new commit (even a trivial one) to force a fresh build, or use "Create deployment" from the branch if your dashboard offers it.
+
 ## Project structure
 
 ```
