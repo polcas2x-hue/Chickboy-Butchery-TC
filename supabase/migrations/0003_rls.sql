@@ -54,7 +54,7 @@ create policy requests_select on requests for select
       select 1 from approval_steps s
       where s.request_id = requests.id
         and s.status = 'pending'
-        and (s.approver_id = auth.uid() or (s.approver_id is null and s.approver_role = current_profile_role()))
+        and (s.approver_id = auth.uid() or (s.approver_id is null and s.approver_role::text = current_profile_role()::text))
     )
   );
 
@@ -70,7 +70,7 @@ create policy requests_update_own_draft on requests for update
 create policy approval_steps_select on approval_steps for select
   using (
     approver_id = auth.uid()
-    or (approver_id is null and approver_role = current_profile_role())
+    or (approver_id is null and approver_role::text = current_profile_role()::text)
     or current_profile_role() = 'admin'
     or exists (
       select 1 from requests r where r.id = approval_steps.request_id and r.requester_id = auth.uid()
