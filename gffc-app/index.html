@@ -3420,15 +3420,14 @@
 
       function loadSchedule() {
         scheduleList.innerHTML = '<div class="empty-state">Loading schedule...</div>';
-        google.script.run
+        callEdgeFunction('get-schedule', { token: session.token || null })
           .withSuccessHandler(function (rows) {
             scheduleCache = rows || [];
             renderSchedule();
           })
           .withFailureHandler(function (err) {
             scheduleList.innerHTML = '<div class="empty-state">Could not load schedule: ' + (err && err.message ? err.message : err) + '</div>';
-          })
-          .getTrainingSchedule(session.token || null);
+          });
       }
 
       function renderSchedule() {
@@ -3574,14 +3573,14 @@
         };
 
         if (id) {
-          google.script.run.withSuccessHandler(handler.onDone).withFailureHandler(handler.onFail).updateScheduleEntry(session.token, entry);
+          callEdgeFunction('update-schedule-entry', { token: session.token, entry: entry }).withSuccessHandler(handler.onDone).withFailureHandler(handler.onFail);
         } else {
-          google.script.run.withSuccessHandler(handler.onDone).withFailureHandler(handler.onFail).addScheduleEntry(session.token, entry);
+          callEdgeFunction('add-schedule-entry', { token: session.token, entry: entry }).withSuccessHandler(handler.onDone).withFailureHandler(handler.onFail);
         }
       });
 
       function handleApproveSchedule(id, decision) {
-        google.script.run
+        callEdgeFunction('approve-schedule-entry', { token: session.token, id: id, decision: decision })
           .withSuccessHandler(function (result) {
             if (result && result.success) {
               showAlert(statusMessage, 'success', result.message);
@@ -3592,13 +3591,12 @@
           })
           .withFailureHandler(function (err) {
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .approveScheduleEntry(session.token, id, decision);
+          });
       }
 
       function handleDeleteSchedule(id) {
         if (!confirm('Delete this training schedule entry? This cannot be undone.')) return;
-        google.script.run
+        callEdgeFunction('delete-schedule-entry', { token: session.token, id: id })
           .withSuccessHandler(function (result) {
             if (result && result.success) {
               showAlert(statusMessage, 'success', result.message);
@@ -3609,8 +3607,7 @@
           })
           .withFailureHandler(function (err) {
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .deleteScheduleEntry(session.token, id);
+          });
       }
 
       // ===================== DASHBOARD =====================
@@ -3666,12 +3663,11 @@
           .getDashboardStats(session.token, filters);
 
         document.getElementById('batchesTableWrap').innerHTML = '<div class="empty-state">Loading...</div>';
-        google.script.run
+        callEdgeFunction('get-open-batches', { token: session.token })
           .withSuccessHandler(renderBatchOccupancy)
           .withFailureHandler(function (err) {
             document.getElementById('batchesTableWrap').innerHTML = '<div class="empty-state">Could not load batch data: ' + (err && err.message ? err.message : err) + '</div>';
-          })
-          .getOpenBatches(session.token);
+          });
 
         // This is the "consolidated dashboard" — Applications above, plus
         // Sales and Expenses overview sections below, each Super Admin/Admin
@@ -4343,7 +4339,7 @@
         var currentBatch = app['Batch Number'] || '';
         manageBatchNumber.innerHTML = '<option value="">Loading batches...</option>';
         manageBatchNumber.disabled = !canReviewApplications();
-        google.script.run
+        callEdgeFunction('get-open-batches', { token: session.token })
           .withSuccessHandler(function (batches) {
             var options = '<option value="">Select a batch...</option>';
             var includedCurrent = false;
@@ -4361,8 +4357,7 @@
           })
           .withFailureHandler(function () {
             manageBatchNumber.innerHTML = '<option value="' + escapeHtml(currentBatch) + '">' + escapeHtml(currentBatch || 'Could not load batches') + '</option>';
-          })
-          .getOpenBatches(session.token);
+          });
 
         manageReviewStatus.value = app['Review Status'] || 'Pending Review';
         manageReviewStatus.disabled = !canReviewApplications();
