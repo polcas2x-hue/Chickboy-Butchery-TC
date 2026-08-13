@@ -65,3 +65,22 @@ verify_jwt = false
 
 [functions."get-barangays"]
 verify_jwt = false
+
+# Schedule phase — same reasoning as above.
+[functions."get-schedule"]
+verify_jwt = false
+
+[functions."add-schedule-entry"]
+verify_jwt = false
+
+[functions."update-schedule-entry"]
+verify_jwt = false
+
+[functions."approve-schedule-entry"]
+verify_jwt = false
+
+[functions."delete-schedule-entry"]
+verify_jwt = false
+
+[functions."get-open-batches"]
+verify_jwt = false

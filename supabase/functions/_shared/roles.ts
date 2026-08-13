@@ -17,3 +17,16 @@ export function canApproveTrainingResults(role: string): boolean {
 export function canViewApplicantRecords(role: string): boolean {
   return isAdmin1(role) || role === 'Admin' || role === 'Staff' || role === 'Instructor';
 }
+
+export function canSubmitSchedule(role: string): boolean {
+  return isAdmin1(role) || role === 'Admin' || role === 'Staff' || role === 'Instructor';
+}
+export function canApproveSchedule(role: string): boolean {
+  return isAdmin1(role) || role === 'Admin';
+}
+export function canDeleteSchedule(role: string): boolean {
+  return isAdmin1(role);
+}
+export function canManageSchedulePricing(role: string): boolean {
+  return isAdmin1(role) || role === 'Admin';
+}
