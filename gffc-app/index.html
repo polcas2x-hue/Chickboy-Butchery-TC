@@ -5900,11 +5900,7 @@
 
       // ===================== INIT =====================
       updateEducationFields();
-      try {
-        loadSchedule();
-      } catch (e) {
-        window.__initLoadScheduleError = (e && e.stack) || String(e);
-      }
+      loadSchedule();
 
     })();
   </script>
