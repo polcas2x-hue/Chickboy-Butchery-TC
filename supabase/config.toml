@@ -24,3 +24,20 @@ enable_signup = true
 
 [auth.email]
 enable_confirmations = false
+
+# These functions implement their own auth (custom sessions table, see
+# supabase/migrations/0005_auth_sessions.sql) rather than Supabase's native
+# JWT auth, so the platform's default "require a Supabase JWT" gate is
+# turned off for them — login/session-info/logout/change-password ARE the
+# auth layer, called with only the publishable key.
+[functions.login]
+verify_jwt = false
+
+[functions.logout]
+verify_jwt = false
+
+[functions."session-info"]
+verify_jwt = false
+
+[functions."change-password"]
+verify_jwt = false
