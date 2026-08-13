@@ -17,6 +17,9 @@ dist-ssr
 supabase/.branches
 supabase/.temp
 
+# One-time Sheets->Supabase data import output (contains temp passwords + PII, never commit)
+supabase/data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
