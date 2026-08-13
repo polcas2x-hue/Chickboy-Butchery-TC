@@ -81,21 +81,21 @@ from `data/import_credentials.txt`).
 
 ```bash
 # Address lookup (public, no token) — Bukidnon's PSGC code is 101300000
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/get-municipalities' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/get-municipalities' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"provinceCode":"101300000"}'
 
 # Submit a test application (small placeholder base64 images are fine for
 # validation testing; use a real tiny JPEG/PNG data URI to test the actual
 # Storage upload). Expect success:true and a NEW reference number.
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/submit-application' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/submit-application' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"formData": { ... full payload, see gffc-app/index.html:3193 for the exact shape ... }}'
 
 # Submit again with the same email -> expect success:false, duplicate message
 
 # Accept it as Staff (assign a batch first via the Schedule tables, or any text batch name)
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/update-application-status' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/update-application-status' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"token":"<staff token>","applicationId":"<id from submit response, or look it up>","fields":{"reviewStatus":"Accepted","batchNumber":"Batch 01"}}'
 # -> expect success:true; check Table Editor for a new `users` row with role Trainees
@@ -103,7 +103,7 @@ curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/update-ap
 # Repeat the same accept call -> still success:true, no duplicate users row
 
 # List applications as Staff -> full array; as a Trainees-role token -> non-200 error
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/get-applications' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/get-applications' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"token":"<staff token>"}'
 ```

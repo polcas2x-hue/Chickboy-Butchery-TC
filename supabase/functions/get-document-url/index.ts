@@ -63,6 +63,14 @@ Deno.serve(async (req) => {
     return jsonResponse({ success: false, message: 'No document on file.' }, 404);
   }
 
+  // Applicants migrated from the old Google Sheet still carry their
+  // original Drive "view" URL here (files weren't re-hosted — see
+  // supabase/MIGRATION.md) — only a non-URL value is a real Storage path
+  // that needs signing.
+  if (/^https?:\/\//i.test(path)) {
+    return jsonResponse({ success: true, url: path });
+  }
+
   const { data: signed, error: signError } = await supabaseAdmin.storage.from(DOCUMENTS_BUCKET).createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
   if (signError || !signed) {
     return jsonResponse({ success: false, message: signError?.message ?? 'Could not create a link for this document.' }, 500);

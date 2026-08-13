@@ -26,9 +26,9 @@ alter table users add column sessions_invalid_after timestamptz;
 create or replace function verify_password(plain_password text, hash text)
 returns boolean as $$
   select crypt(plain_password, hash) = hash;
-$$ language sql security definer set search_path = public;
+$$ language sql security definer set search_path = public, extensions;
 
 create or replace function hash_password(plain_password text)
 returns text as $$
   select crypt(plain_password, gen_salt('bf'));
-$$ language sql security definer set search_path = public;
+$$ language sql security definer set search_path = public, extensions;

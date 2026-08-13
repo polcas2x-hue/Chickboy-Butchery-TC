@@ -35,12 +35,21 @@ async function resolveUsernames(supabaseAdmin: SupabaseClient, rows: ApplicantRo
   return new Map((data ?? []).map((u: { id: string; username: string }) => [u.id, u.username]));
 }
 
+// Applicants migrated from the old Google Sheet still carry their original
+// Drive "view" URLs in these columns (see supabase/MIGRATION.md — files
+// themselves were deliberately not re-hosted). Only a value that ISN'T
+// already a full URL is a real Storage path from a new-flow submission that
+// needs signing.
+function isStoragePath(value: string): boolean {
+  return !/^https?:\/\//i.test(value);
+}
+
 async function resolveSignedUrls(supabaseAdmin: SupabaseClient, rows: ApplicantRow[]): Promise<Map<string, string>> {
   const paths = new Set<string>();
   const fields = ['applicant_photo_url', 'valid_id_url', 'psa_url', 'barangay_clearance_url', 'drug_test_url'];
   for (const row of rows) {
     for (const field of fields) {
-      if (row[field]) paths.add(row[field]);
+      if (row[field] && isStoragePath(row[field])) paths.add(row[field]);
     }
   }
   if (paths.size === 0) return new Map();
@@ -57,7 +66,7 @@ async function resolveSignedUrls(supabaseAdmin: SupabaseClient, rows: ApplicantR
 // endpoints; for a single row, the maps just end up with 0-5 entries.
 export async function toLegacyApplicantShapeBatch(supabaseAdmin: SupabaseClient, rows: ApplicantRow[]): Promise<Record<string, unknown>[]> {
   const [usernames, signedUrls] = await Promise.all([resolveUsernames(supabaseAdmin, rows), resolveSignedUrls(supabaseAdmin, rows)]);
-  const urlOrEmpty = (path: string | null) => (path ? signedUrls.get(path) ?? '' : '');
+  const urlOrEmpty = (value: string | null) => (value ? (isStoragePath(value) ? signedUrls.get(value) ?? '' : value) : '');
   const usernameOrEmpty = (id: string | null) => (id ? usernames.get(id) ?? '' : '');
 
   return rows.map((row) => ({
