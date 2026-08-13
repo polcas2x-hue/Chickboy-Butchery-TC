@@ -46,24 +46,24 @@ Pick a real migrated account and its temp password from
 
 ```bash
 # 1. Login — expect {"success":true,"token":"...","role":"Admin",...}
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/login' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/login' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"username":"test_admin","password":"<temp password>"}'
 
 # 2. Session info with that token — expect {"success":true,"role":"Admin",...}
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/session-info' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/session-info' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"token":"<token from step 1>"}'
 
 # 3. Change password — expect {"success":true,"message":"Password updated successfully."}
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/change-password' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/change-password' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"token":"<token>","oldPassword":"<temp password>","newPassword":"<something 6+ chars>"}'
 
 # 4. Confirm the OLD password no longer works, the new one does (repeat step 1 with each)
 
 # 5. Logout, then confirm session-info now returns {"success":false}
-curl -s -X POST 'https://topzzdvyzyodaokypmhc.supabase.co/functions/v1/logout' \
+curl -s -X POST 'https://ojwdsxsuhdtbyqrssgva.supabase.co/functions/v1/logout' \
   -H "apikey: YOUR_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
   -d '{"token":"<token>"}'
 ```

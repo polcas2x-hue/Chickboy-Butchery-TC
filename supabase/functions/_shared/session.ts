@@ -60,3 +60,15 @@ export async function requireRole(supabaseAdmin: SupabaseClient, token: string |
   }
   return session;
 }
+
+// Port of Code.gs's `token ? getSession_(token) : null` pattern used by
+// submitApplication (Code.gs:1383) — an optional, non-throwing session
+// lookup for endpoints where being logged in changes behavior but isn't
+// required (an anonymous applicant vs. Staff submitting on their behalf).
+export async function getSessionOrNull(supabaseAdmin: SupabaseClient, token: string | null | undefined): Promise<Session | null> {
+  try {
+    return await requireSession(supabaseAdmin, token);
+  } catch {
+    return null;
+  }
+}

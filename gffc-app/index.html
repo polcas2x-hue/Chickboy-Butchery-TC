@@ -1830,8 +1830,8 @@
       // publishable key — safe to ship in client-side code (same value as
       // VITE_SUPABASE_ANON_KEY in the Vite app's .env.local), never the
       // secret/service-role key.
-      var SUPABASE_URL = 'https://topzzdvyzyodaokypmhc.supabase.co';
-      var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcHp6ZHZ5enlvZGFva3lwbWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMTQyNDAsImV4cCI6MjEwMTc5MDI0MH0.v8KjBecByu4rxU_9yVgFgYE9L9uUlZEG5fY70EyTt8A';
+      var SUPABASE_URL = 'https://ojwdsxsuhdtbyqrssgva.supabase.co';
+      var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qd2RzeHN1aGR0YnlxcnNzZ3ZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwODI2MjgsImV4cCI6MjEwMTY1ODYyOH0.h-vpsxKq-CpkaHddaHKF1AvaCZytuGywVII6RbVOr_M';
       var EDGE_FUNCTIONS_URL = SUPABASE_URL + '/functions/v1';
 
       // Calls a Supabase Edge Function and adapts it to the same
@@ -1848,7 +1848,19 @@
                   headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
                   body: JSON.stringify(args || {}),
                 })
-                  .then(function (res) { return res.json(); })
+                  .then(function (res) {
+                    return res.json().then(function (body) {
+                      // Mirrors google.script.run: most functions return a
+                      // {success:false,...} body on business-logic failure
+                      // (still routed to onSuccess, same as Code.gs's normal
+                      // return value), but a non-2xx HTTP status means the
+                      // function threw (auth/permission errors) — that's
+                      // withFailureHandler's job, same as a thrown
+                      // Apps Script error.
+                      if (!res.ok) return Promise.reject(body && body.message ? new Error(body.message) : new Error('Request failed.'));
+                      return body;
+                    });
+                  })
                   .then(onSuccess)
                   .catch(onFailure);
               },
@@ -2365,7 +2377,7 @@
       function loadBarangays(code) {
         barangaySelect.innerHTML = '<option value="">Loading barangays...</option>';
         setFieldMode(barangaySelect, barangayOtherInput, barangayHint, 'locked');
-        google.script.run
+        callEdgeFunction('get-barangays', { municipalityCode: code })
           .withSuccessHandler(function (result) {
             if (result && result.success && result.barangays && result.barangays.length) {
               var html = '<option value="">Select barangay</option>';
@@ -2380,8 +2392,7 @@
           })
           .withFailureHandler(function () {
             setFieldMode(barangaySelect, barangayOtherInput, barangayHint, 'text');
-          })
-          .getBarangays(code);
+          });
       }
 
       provinceSelect.addEventListener('change', function () {
@@ -2403,7 +2414,7 @@
         var code = opt.getAttribute('data-code');
         municipalitySelect.innerHTML = '<option value="">Loading...</option>';
 
-        google.script.run
+        callEdgeFunction('get-municipalities', { provinceCode: code })
           .withSuccessHandler(function (result) {
             if (result && result.success && result.municipalities && result.municipalities.length) {
               var html = '<option value="">Select municipality/city</option>';
@@ -2422,8 +2433,7 @@
           })
           .withFailureHandler(function () {
             setFieldMode(municipalitySelect, municipalityOtherInput, municipalityHint, 'text');
-          })
-          .getMunicipalities(code);
+          });
       });
 
       municipalitySelect.addEventListener('change', function () {
@@ -3218,7 +3228,7 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner"></span>Submitting...';
 
-        google.script.run
+        callEdgeFunction('submit-application', { token: session.token || null, formData: payload })
           .withSuccessHandler(function (result) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Application';
@@ -3234,8 +3244,7 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Application';
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .submitApplication(session.token || null, payload);
+          });
       });
 
       // ===================== APPLICATION RECEIPT =====================
@@ -4179,15 +4188,14 @@
 
       function loadApplications() {
         applicationsTableWrap.innerHTML = '<div class="empty-state">Loading applications...</div>';
-        google.script.run
+        callEdgeFunction('get-applications', { token: session.token })
           .withSuccessHandler(function (rows) {
             applicationsCache = rows || [];
             applyApplicationsFilter();
           })
           .withFailureHandler(function (err) {
             applicationsTableWrap.innerHTML = '<div class="empty-state">Could not load applications: ' + (err && err.message ? err.message : err) + '</div>';
-          })
-          .getAllApplications(session.token);
+          });
       }
 
       var STATUS_COLUMNS = ['Review Status', 'Approval Status', 'Training Result', 'Result Approval Status', 'PSA Status', 'Drug Test Status', 'Agreement Accepted'];
@@ -4410,7 +4418,7 @@
         saveManageBtn.disabled = true;
         saveManageBtn.innerHTML = '<span class="spinner"></span>Saving...';
 
-        google.script.run
+        callEdgeFunction('update-application-status', { token: session.token, applicationId: id, fields: fields })
           .withSuccessHandler(function (result) {
             saveManageBtn.disabled = false;
             saveManageBtn.textContent = 'Save Changes';
@@ -4430,8 +4438,7 @@
             saveManageBtn.disabled = false;
             saveManageBtn.textContent = 'Save Changes';
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .updateApplicationStatus(session.token, id, fields);
+          });
       });
 
       // ===================== APPLICANT PHOTO: BACKFILL / REPROCESSING =====================
@@ -4638,7 +4645,7 @@
         }
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>Submitting...';
-        google.script.run
+        callEdgeFunction('upload-requirement-document', { token: session.token, docType: 'psa', fileDataUrl: fileData.pendingPsa, drugTestDate: null })
           .withSuccessHandler(function (result) {
             btn.disabled = false;
             btn.textContent = 'Submit PSA Birth Certificate';
@@ -4654,8 +4661,7 @@
             btn.disabled = false;
             btn.textContent = 'Submit PSA Birth Certificate';
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .uploadMyRequirementDocument(session.token, 'psa', fileData.pendingPsa, null);
+          });
       });
 
       document.getElementById('submitPendingDrugTestBtn').addEventListener('click', function () {
@@ -4671,7 +4677,7 @@
         }
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>Submitting...';
-        google.script.run
+        callEdgeFunction('upload-requirement-document', { token: session.token, docType: 'drugTest', fileDataUrl: fileData.pendingDrugTest, drugTestDate: pendingDrugTestDateInput.value })
           .withSuccessHandler(function (result) {
             btn.disabled = false;
             btn.textContent = 'Submit Drug Test Result';
@@ -4687,8 +4693,7 @@
             btn.disabled = false;
             btn.textContent = 'Submit Drug Test Result';
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .uploadMyRequirementDocument(session.token, 'drugTest', fileData.pendingDrugTest, pendingDrugTestDateInput.value);
+          });
       });
 
       // ===================== STUDENT: ORDER TOOLS & EQUIPMENT =====================
