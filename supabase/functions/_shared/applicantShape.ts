@@ -26,7 +26,11 @@ function formatDateTime(iso: string | null): string {
 async function resolveUsernames(supabaseAdmin: SupabaseClient, rows: ApplicantRow[]): Promise<Map<string, string>> {
   const ids = new Set<string>();
   for (const row of rows) {
-    for (const field of ['reviewed_by', 'approved_by', 'result_approved_by']) {
+    // student_user_id included so 'Student Username' resolves to the
+    // REAL current username rather than being derived from
+    // student_id_number (which stays fixed even after a rename — see
+    // admin-update-user, which lets Super Admins rename login usernames).
+    for (const field of ['reviewed_by', 'approved_by', 'result_approved_by', 'student_user_id']) {
       if (row[field]) ids.add(row[field]);
     }
   }
@@ -119,7 +123,7 @@ export async function toLegacyApplicantShapeBatch(supabaseAdmin: SupabaseClient,
     'Result Approved By': usernameOrEmpty(row.result_approved_by),
     'Result Approved At': formatDateTime(row.result_approved_at),
     'Student ID Number': row.student_id_number || '',
-    'Student Username': row.student_id_number ? row.student_id_number.toLowerCase() : '',
+    'Student Username': usernameOrEmpty(row.student_user_id),
     'Student Account Created At': formatDateTime(row.student_account_created_at),
     'Photo Reprocessed At': formatDateTime(row.photo_reprocessed_at),
     'PSA Status': row.psa_status || '',

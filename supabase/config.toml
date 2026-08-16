@@ -84,3 +84,19 @@ verify_jwt = false
 
 [functions."get-open-batches"]
 verify_jwt = false
+
+# User Management phase — same reasoning as above.
+[functions."admin-create-user"]
+verify_jwt = false
+
+[functions."admin-update-user"]
+verify_jwt = false
+
+[functions."admin-delete-user"]
+verify_jwt = false
+
+[functions."get-users"]
+verify_jwt = false
+
+[functions."get-user-log"]
+verify_jwt = false

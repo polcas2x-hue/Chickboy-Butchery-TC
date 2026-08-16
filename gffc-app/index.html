@@ -5446,15 +5446,14 @@
 
       function loadUserLog() {
         userLogWrap.innerHTML = '<div class="empty-state">Loading user log...</div>';
-        google.script.run
+        callEdgeFunction('get-user-log', { token: session.token })
           .withSuccessHandler(function (rows) {
             userLogCache = rows || [];
             applyUserLogFilter();
           })
           .withFailureHandler(function (err) {
             userLogWrap.innerHTML = '<div class="empty-state">Could not load user log: ' + escapeHtml(err && err.message ? err.message : err) + '</div>';
-          })
-          .getUserLog(session.token);
+          });
       }
 
       function applyUserLogFilter() {
@@ -5710,7 +5709,7 @@
         var role = document.getElementById('newUserRole').value;
         var password = document.getElementById('newUserPassword').value;
 
-        google.script.run
+        callEdgeFunction('admin-create-user', { token: session.token, data: { fullName: fullName, username: username, password: password, role: role } })
           .withSuccessHandler(function (result) {
             if (result && result.success) {
               showAlert(statusMessage, 'success', result.message);
@@ -5722,8 +5721,7 @@
           })
           .withFailureHandler(function (err) {
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .adminCreateUser(session.token, { fullName: fullName, username: username, password: password, role: role });
+          });
       });
 
       // ===================== ACCOUNT: MANAGE USERS (edit/delete, Super Admin only) =====================
@@ -5743,15 +5741,14 @@
 
       function loadManageUsers() {
         manageUsersWrap.innerHTML = '<div class="empty-state">Loading accounts...</div>';
-        google.script.run
+        callEdgeFunction('get-users', { token: session.token })
           .withSuccessHandler(function (rows) {
             manageUsersCache = rows || [];
             renderManageUsersTable();
           })
           .withFailureHandler(function (err) {
             manageUsersWrap.innerHTML = '<div class="empty-state">Could not load accounts: ' + escapeHtml(err && err.message ? err.message : err) + '</div>';
-          })
-          .getAllUsers(session.token);
+          });
       }
 
       function renderManageUsersTable() {
@@ -5828,7 +5825,7 @@
             return;
           }
           deleteBtn.disabled = true;
-          google.script.run
+          callEdgeFunction('admin-delete-user', { token: session.token, targetUsername: username })
             .withSuccessHandler(function (result) {
               if (result && result.success) {
                 showAlert(statusMessage, 'success', result.message);
@@ -5842,8 +5839,7 @@
             .withFailureHandler(function (err) {
               showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
               deleteBtn.disabled = false;
-            })
-            .adminDeleteUser(session.token, username);
+            });
         }
       });
 
@@ -5872,7 +5868,17 @@
 
         saveEditUserBtn.disabled = true;
         saveEditUserBtn.textContent = 'Saving...';
-        google.script.run
+        callEdgeFunction('admin-update-user', {
+          token: session.token,
+          targetUsername: editingUsername,
+          updates: {
+            newUsername: newUsername,
+            fullName: fullName,
+            role: role,
+            active: active,
+            newPassword: newPassword || undefined
+          }
+        })
           .withSuccessHandler(function (result) {
             saveEditUserBtn.disabled = false;
             saveEditUserBtn.textContent = 'Save Changes';
@@ -5888,13 +5894,6 @@
             saveEditUserBtn.disabled = false;
             saveEditUserBtn.textContent = 'Save Changes';
             showAlert(statusMessage, 'error', 'Server error: ' + (err && err.message ? err.message : err));
-          })
-          .adminUpdateUser(session.token, editingUsername, {
-            newUsername: newUsername,
-            fullName: fullName,
-            role: role,
-            active: active,
-            newPassword: newPassword || undefined
           });
       });
 

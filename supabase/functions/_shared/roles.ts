@@ -30,3 +30,5 @@ export function canDeleteSchedule(role: string): boolean {
 export function canManageSchedulePricing(role: string): boolean {
   return isAdmin1(role) || role === 'Admin';
 }
+
+export const VALID_ROLES = ['Super Admin', 'Admin', 'Instructor', 'Staff', 'Kiosk', 'Trainees'];
